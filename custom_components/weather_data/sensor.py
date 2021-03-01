@@ -93,7 +93,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         _LOGGER.error("Latitude or longitude not set in Home Assistant config")
         return False
 
-    coordinates = {"lat": str(latitude), "lon": str(longitude), "msl": str(elevation)}
+    coordinates = {"lat": str(latitude), "lon": str(longitude), "altitude": str(elevation)}
 
     dev = []
     for sensor_type in config[CONF_MONITORED_CONDITIONS]:
@@ -140,8 +140,8 @@ class WeatherSensor(Entity):
         if self.type != "symbol":
             return None
         return (
-            "https://api.met.no/weatherapi/weathericon/1.1/"
-            f"?symbol={self._state};content_type=image/png"
+            "https://api.met.no/images/weathericons/png/"
+            f"?symbol={self._state}.png"
         )
 
     @property
@@ -165,7 +165,7 @@ class WeatherData:
 
     def __init__(self, hass, coordinates, forecast, devices):
         """Initialize the data object."""
-        self._url = "https://api.met.no/weatherapi/locationforecast/1.9/"
+        self._url = "https://api.met.no/weatherapi/locationforecast/2.0/classic"
         self._urlparams = coordinates
         self._forecast = forecast
         self.devices = devices
@@ -249,7 +249,7 @@ class WeatherData:
                     if dev.type == "precipitation":
                         new_state = loc_data[dev.type]["@value"]
                     elif dev.type == "symbol":
-                        new_state = loc_data[dev.type]["@number"]
+                        new_state = loc_data[dev.type]["@code"]
                     elif dev.type in (
                         "temperature",
                         "pressure",
